@@ -39,7 +39,7 @@ chmod +x install
 
 <b>Script work only on Clean Ubuntu 16.04 install servers</b>
 
-Stalker auto install script v1.1 - RELEASE
+TVHOSCam Auto install script v1.1 - RELEASE
 
   * Implemented support for Ubuntu 16.04.
   * Fix UTF-8 terminal support in Lion
