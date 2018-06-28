@@ -1,0 +1,218 @@
+#!/bin/bash
+
+# TVHeadend and OSCam road warrior installer for  Ubuntu 16.04
+
+# This script will work on Ubuntu and probably other distros
+# of the same families, although no support is offered for them. It isn't
+# bulletproof but it will probably work if you simply want to setup a TVHOSCam on
+# your Ubuntu box. It has been designed to be as unobtrusive and
+# universal as possible.
+
+# This is a free shell script under GNU GPL version 3.0 or above
+# Copyright (C) 2017 LinuxHelps project.
+# Feedback/comment/suggestions: https://linuxhelps.net/
+# Author: Ivan Bachvarov a.k.a SlaSerX
+# Twitter: https://twitter.com/slaserx3
+
+# Color schema
+
+red='\033[01;31m'
+blue='\033[01;34m'
+green='\033[01;32m'
+norm='\033[00m'
+
+# Temporary colors
+RED="$(tput setaf 1)"
+YELLOW="$(tput setaf 3)"
+CYAN="$(tput setaf 6)"
+NORMAL="$(tput sgr0)"
+
+# smallLoader colors
+
+CSI="\033["
+CEND="${CSI}0m"
+CRED="${CSI}1;31m"
+CGREEN="${CSI}1;32m"
+CYELLOW="${CSI}1;33m"
+CPURPLE="${CSI}1;35m"
+CCYAN="${CSI}1;36m"
+CBROWN="${CSI}0;33m"
+
+# Version
+
+VER="1.1-Release"
+PRODUCT="TVH and OSCam"
+WEB="http://`ip route get 8.8.8.8 | awk '{print $NF; exit}'`:9981"
+WAN="`wget -q -O - http://icanhazip.com/ | tail`"
+LOCAL="`ip route get 8.8.8.8 | awk '{print $NF; exit}'`"
+
+# Setting for the new UTF-8 terminal support in Lion
+export LC_CTYPE=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+
+# smallLoader
+
+smallLoader() {
+    echo ""
+    echo ""
+    echo -ne '[ + + +             ] 3s \r'
+    sleep 1
+    echo -ne '[ + + + + + +       ] 2s \r'
+    sleep 1
+    echo -ne '[ + + + + + + + + + ] 1s \r'
+    sleep 1
+    echo -ne '[ + + + + + + + + + ] Press [Enter] to continue... \r'
+    echo -ne '\n'
+
+    read -r
+}
+
+
+
+#custom 
+
+supported="    Ubuntu 16.04 "
+
+skipyesno=0
+
+# Ask a yes or no question
+# if $skipyesno is 1, always Y
+# if NONINTERACTIVE environment variable is 1, always Y
+yesno () {
+  # XXX skipyesno is a global set in the calling script
+  # shellcheck disable=SC2154
+  if [ "$skipyesno" = "1" ]; then
+    return 0
+  fi
+  if [ "$NONINTERACTIVE" = "1" ]; then
+    return 0
+  fi
+  while read -r line; do
+    case $line in
+      y|Y|Yes|YES|yes|yES|yEs|YeS|yeS) return 0
+      ;;
+      n|N|No|NO|no|nO) return 1
+      ;;
+      *)
+      printf "\n${YELLOW}Please enter ${CYAN}[y]${YELLOW} or ${CYAN}[n]${YELLOW}:${NORMAL} "
+      ;;
+    esac
+  done
+}
+
+install_msg() {
+cat <<EOF
+
+  Welcome to the ${RED}$PRODUCT${NORMAL} installer, version ${RED}$VER${NORMAL}
+
+  This script must be run on a freshly installed supported OS. It does not
+  perform updates or upgrades (use your system package manager).
+
+  The systems currently supported by install.sh are:
+
+EOF
+echo "${CYAN}$supported${NORMAL}"
+cat <<EOF
+
+  If your OS/version/arch is not listed, installation ${RED}will fail${NORMAL}. More
+  details about the systems supported by the script can be found here:
+
+
+EOF
+
+  printf " Continue? (y/n) "
+  if ! yesno; then
+    exit
+  fi
+}
+
+if [ "$skipyesno" -ne 1 ] && [ -z "$setup_only" ]; then
+  install_msg
+fi
+
+
+repo="sudo add-apt-repository"
+update="sudo apt-get -y update"
+upgrade="sudo apt-get upgrade -y"
+inst="sudo apt-get install"
+copy="sudo cp"
+change="sudo sed -i"
+
+$inst whiptail -y
+
+whiptail --title "Install Tvh and OSCam in Ubuntu" --msgbox "WELCOME TO INSTALLATION             			 Choose Ok to continue." 10 50
+
+if (whiptail --title "Ubuntu Update" --yesno "You want update Ubuntu?" 8 50) then
+    echo "You selected Yes, to want update Ubuntu"
+	$update
+	$upgrade
+else
+    echo "You selected No, to want update Ubuntu"
+fi
+
+
+if (whiptail --title "Install Tvh and OSCam" --yesno "Click yes to install or no to update" 8 50) then
+    echo "You selected Yes, to want Install"
+        echo "Installing the necessary dependencies and downloading the necessary files to install KODIServer"
+                        $inst build-essential -y
+                        $inst libssl-dev libpcsclite-dev -y
+                        $inst mercurial cvs subversion libncurses-dev -y
+                        $inst cmake -y
+
+cmd=(whiptail --separate-output  --title "PROGRAMS TO INSTALL ON SERVER" --checklist "Select Options:" 10 38 3)
+options=(1 "OSCam Server " off    # any option can be set to default to "on"
+         2 "Tvheadend Server " off)
+choices=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
+clear
+for choice in $choices
+do
+    case $choice in
+       1)
+           echo "Installing Oscam Server"
+                cd /usr/src
+                sudo svn checkout http://streamboard.tv/svn/oscam/trunk oscam
+                cd oscam
+                sudo cmake -DWEBIF=1 -DPCSC=1
+                sudo make
+                $copy oscam /usr/local/bin
+                cd ..
+                sudo rm -rf oscam
+                cd /usr/local/bin
+                sudo chmod 755 oscam
+                $change '$ i\/usr/local/bin/oscam -b' /etc/rc.local
+                sudo chmod 777 /usr/local/etc
+
+           ;;
+       2)
+           echo "Installing Tvheadend Server"
+		sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 379CE192D401AB61
+		echo "deb https://dl.bintray.com/tvheadend/deb xenial stable" | sudo tee -a /etc/apt/sources.list
+		echo "deb https://dl.bintray.com/tvheadend/deb xenial unstable" | sudo tee -a /etc/apt/sources.list
+		$update
+		$inst tvheadend -y
+           ;;
+
+    esac
+done
+
+else
+    echo "You selected No, to want Update"
+	{
+         for ((i = 0 ; i <= 100 ; i+=5)); do
+                sleep 0.1
+                echo $i
+         done
+        } | whiptail --gauge "In Progress" 6 50 0
+fi
+
+/etc/init.d/tvheadend start
+
+echo ""
+echo -e "${CCYAN}-----------------------------------------------------------------------${CEND}"
+echo ""
+echo -e "IP WAN       : ${CGREEN}${WAN}${CEND}"
+echo -e "Local IP     : ${CGREEN}${LOCAL}${CEND}"
+echo -e "TVHeadEnd    : ${CGREEN}${WEB}${CEND}"
+echo ""
+echo -e "${CCYAN}-----------------------------------------------------------------------${CEND}"
+echo ""
