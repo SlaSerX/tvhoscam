@@ -52,6 +52,9 @@ Stalker auto install script v1.1 - RELEASE
   * Last Version OSCam
   * Last Version TVHeadend
 
+https://www.youtube.com/watch?v=C8oVhuJlo1M
+
+[![Click to Watch](https://img.youtube.com/vi/C8oVhuJlo1M/0.jpg)](https://www.youtube.com/watch?v=C8oVhuJlo1M "Click to Watch")
 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=slaserx@itbox.bg&item_name=LinuxHelps%20Support&currency_code=EUR) - You can make one-time donations via PayPal. I'll probably buy a coffe. :coffee:
 Thanks! :heart:
