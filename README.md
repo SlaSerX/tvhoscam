@@ -50,7 +50,6 @@ Stalker auto install script v1.1 - RELEASE
   * Last Version OSCam
   * Last Version TVHeadend
 
-https://www.youtube.com/watch?v=C8oVhuJlo1M
 
 [![Click to Watch](https://img.youtube.com/vi/C8oVhuJlo1M/0.jpg)](https://www.youtube.com/watch?v=C8oVhuJlo1M "Click to Watch")
 
