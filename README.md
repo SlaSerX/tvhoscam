@@ -46,7 +46,6 @@ TVHOSCam Auto install script v1.1 - RELEASE
   * Add dialog menu for choice OSCAM and TVHeadend installing
   * Checking OS Support
   * fix bugs
-  * fix deploy
   * Last Version OSCam
   * Last Version TVHeadend
 
